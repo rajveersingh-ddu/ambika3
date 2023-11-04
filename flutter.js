@@ -1,7 +1,3 @@
-// Copyright 2014 The Flutter Authors. All rights reserved.
-// Use of this source code is governed by a BSD-style license that can be
-// found in the LICENSE file.
-
 if (!_flutter) {
   var _flutter = {};
 }
@@ -9,28 +5,22 @@ _flutter.loader = null;
 
 (function () {
   "use strict";
-
   const baseUri = ensureTrailingSlash(getBaseURI());
-
   function getBaseURI() {
     const base = document.querySelector("base");
     return (base && base.getAttribute("href")) || "";
   }
-
   function ensureTrailingSlash(uri) {
     if (uri == "") {
       return uri;
     }
     return uri.endsWith("/") ? uri : `${uri}/`;
   }
-
   /**
    * Wraps `promise` in a timeout of the given `duration` in ms.
-   *
    * Resolves/rejects with whatever the original `promises` does, or rejects
    * if `promise` takes longer to complete than `duration`. In that case,
    * `debugName` is used to compose a legible error message.
-   *
    * If `duration` is < 0, the original `promise` is returned unchanged.
    * @param {Promise} promise
    * @param {number} duration
@@ -54,12 +44,10 @@ _flutter.loader = null;
         );
       }, duration);
     });
-
     return Promise.race([promise, _clock]).finally(() => {
       clearTimeout(timeoutId);
     });
   }
-
   /**
    * Handles the creation of a TrustedTypes `policy` that validates URLs based
    * on an (optional) incoming array of RegExes.
@@ -91,7 +79,6 @@ _flutter.loader = null;
       }
     }
   }
-
   /**
    * Handles loading/reloading Flutter's service worker, if configured.
    *
@@ -105,7 +92,6 @@ _flutter.loader = null;
     setTrustedTypesPolicy(policy) {
       this._ttPolicy = policy;
     }
-
     /**
      * Returns a Promise that resolves when the latest Flutter service worker,
      * configured by `settings` has been loaded and activated.
@@ -135,18 +121,15 @@ _flutter.loader = null;
         serviceWorkerUrl = `${baseUri}flutter_service_worker.js?v=${serviceWorkerVersion}`,
         timeoutMillis = 4000,
       } = settings;
-
       // Apply the TrustedTypes policy, if present.
       let url = serviceWorkerUrl;
       if (this._ttPolicy != null) {
         url = this._ttPolicy.createScriptURL(url);
       }
-
       const serviceWorkerActivation = navigator.serviceWorker
         .register(url)
         .then(this._getNewServiceWorker)
         .then(this._waitForServiceWorkerActivation);
-
       // Timeout race promise
       return timeout(
         serviceWorkerActivation,
@@ -154,7 +137,6 @@ _flutter.loader = null;
         "prepareServiceWorker"
       );
     }
-
     /**
      * Returns the latest service worker for the given `serviceWorkerRegistrationPromise`.
      *
@@ -166,7 +148,6 @@ _flutter.loader = null;
      */
     async _getNewServiceWorker(serviceWorkerRegistrationPromise) {
       const reg = await serviceWorkerRegistrationPromise;
-
       if (!reg.active && (reg.installing || reg.waiting)) {
         // No active web worker and we have installed or are installing
         // one for the first time. Simply wait for it to activate.
@@ -184,7 +165,6 @@ _flutter.loader = null;
         return reg.active;
       }
     }
-
     /**
      * Returns a Promise that resolves when the `latestServiceWorker` changes its
      * state to "activated".
@@ -194,7 +174,6 @@ _flutter.loader = null;
      */
     async _waitForServiceWorkerActivation(latestServiceWorkerPromise) {
       const serviceWorker = await latestServiceWorkerPromise;
-
       if (!serviceWorker || serviceWorker.state == "activated") {
         if (!serviceWorker) {
           return Promise.reject(
@@ -215,7 +194,6 @@ _flutter.loader = null;
       });
     }
   }
-
   /**
    * Handles injecting the main Flutter web entrypoint (main.dart.js), and notifying
    * the user when Flutter is ready, through `didCreateEngineInitializer`.
@@ -230,7 +208,6 @@ _flutter.loader = null;
       // Watchdog to prevent injecting the main entrypoint multiple times.
       this._scriptLoaded = false;
     }
-
     /**
      * Injects a TrustedTypesPolicy (or undefined if the feature is not supported).
      * @param {TrustedTypesPolicy | undefined} policy
@@ -238,7 +215,6 @@ _flutter.loader = null;
     setTrustedTypesPolicy(policy) {
       this._ttPolicy = policy;
     }
-
     /**
      * Loads flutter main entrypoint, specified by `entrypointUrl`, and calls a
      * user-specified `onEntrypointLoaded` callback with an EngineInitializer
@@ -252,10 +228,8 @@ _flutter.loader = null;
     async loadEntrypoint(options) {
       const { entrypointUrl = `${baseUri}main.dart.js`, onEntrypointLoaded } =
         options || {};
-
       return this._loadEntrypoint(entrypointUrl, onEntrypointLoaded);
     }
-
     /**
      * Resolves the promise created by loadEntrypoint, and calls the `onEntrypointLoaded`
      * function supplied by the user (if needed).
@@ -278,7 +252,6 @@ _flutter.loader = null;
         this._onEntrypointLoaded(engineInitializer);
       }
     }
-
     /**
      * Injects a script tag into the DOM, and configures this loader to be able to
      * handle the "entrypoint loaded" notifications received from Flutter web.
@@ -294,7 +267,6 @@ _flutter.loader = null;
      */
     _loadEntrypoint(entrypointUrl, onEntrypointLoaded) {
       const useCallback = typeof onEntrypointLoaded === "function";
-
       if (!this._scriptLoaded) {
         this._scriptLoaded = true;
         const scriptTag = this._createScriptTag(entrypointUrl);
@@ -319,7 +291,6 @@ _flutter.loader = null;
         }
       }
     }
-
     /**
      * Creates a script tag for the given URL.
      * @param {string} url
@@ -337,7 +308,6 @@ _flutter.loader = null;
       return scriptTag;
     }
   }
-
   /**
    * The public interface of _flutter.loader. Exposes two methods:
    * * loadEntrypoint (which coordinates the default Flutter web loading procedure)
@@ -355,10 +325,8 @@ _flutter.loader = null;
      */
     async loadEntrypoint(options) {
       const { serviceWorker, ...entrypoint } = options || {};
-
       // A Trusted Types policy that is going to be used by the loader.
       const flutterTT = new FlutterTrustedTypesPolicy();
-
       // The FlutterServiceWorkerLoader instance could be injected as a dependency
       // (and dynamically imported from a module if not present).
       const serviceWorkerLoader = new FlutterServiceWorkerLoader();
@@ -367,7 +335,6 @@ _flutter.loader = null;
         // Regardless of what happens with the injection of the SW, the show must go on
         console.warn("Exception while loading service worker:", e);
       });
-
       // The FlutterEntrypointLoader instance could be injected as a dependency
       // (and dynamically imported from a module if not present).
       const entrypointLoader = new FlutterEntrypointLoader();
@@ -378,6 +345,5 @@ _flutter.loader = null;
       return entrypointLoader.loadEntrypoint(entrypoint);
     }
   }
-
   _flutter.loader = new FlutterLoader();
 })();
