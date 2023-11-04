@@ -2,7 +2,6 @@
 const MANIFEST = 'flutter-app-manifest';
 const TEMP = 'flutter-temp-cache';
 const CACHE_NAME = 'flutter-app-cache';
-
 const RESOURCES = {"assets/AssetManifest.bin": "0e3ad3860786a925d4f5c2042fb7765e",
 "assets/AssetManifest.json": "d19118bfe356f4d16c387fc780e2f5cf",
 "assets/assets/fonts/HindSiliguri-Bold.ttf": "09e7451bd892e6af09275b701369b454",
@@ -45,7 +44,6 @@ const CORE = ["main.dart.js",
 "index.html",
 "assets/AssetManifest.json",
 "assets/FontManifest.json"];
-
 // During install, the TEMP cache is populated with the application shell files.
 self.addEventListener("install", (event) => {
   self.skipWaiting();
